@@ -35,10 +35,10 @@ type CustomClaims struct {
 
 // LoginResponse is the JSON payload that is sent back after login attempt
 type LoginResponse struct {
-	Status      bool   `json:"Status"`
-	TokenType   string `json:"TokenType"`
-	AccessToken string `json:"AccessToken"`
-	ExpiresIn   int    `json:"ExpiresIn"`
+	Status      bool    `json:"Status"`
+	TokenType   string  `json:"TokenType"`
+	AccessToken *string `json:"AccessToken"`
+	ExpiresIn   int     `json:"ExpiresIn"`
 }
 
 // Authenticator Struct for Oauth2 Authentication
@@ -136,14 +136,14 @@ func (a *Authenticator) HandleCallback(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err = issueJWT(idtc)
+	j, err := issueJWT(idtc)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	lr := &LoginResponse{
-		AccessToken: rawTokenID,
+		AccessToken: j,
 		ExpiresIn:   expiresIn,
 		Status:      true,
 		TokenType:   "Bearer",
