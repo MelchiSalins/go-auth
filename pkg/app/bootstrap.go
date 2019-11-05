@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -16,18 +17,20 @@ var (
 	Port string
 	//JwtSecret Signing secret
 	JwtSecret string
+	//OAuthIssuer Address for OAuth provider
+	OAuthIssuer string
 	//ClientID 0Auth Client ID
 	ClientID string
-	//ClientSecret 0Auth Client Secret
+	//ClientSecret OAuth Client Secret
 	ClientSecret string
-	//RedirectURL 0Auth Redirect URL
+	//RedirectURL OAuth Redirect URL
 	RedirectURL string
 	//DBType possible options are postgres, pg or sqlite
 	DBType string
 	//DBHost Host address of the database
 	DBHost string
 	//DBPort Port on which the database is running
-	DBPort string
+	DBPort int
 	//DBUser Username to connect to the database
 	DBUser string
 	//DBPass Password to connect to the databse
@@ -56,45 +59,55 @@ type IDTokenClaims struct {
 // Init Sources & Initializes configuration
 // required for starting the service.
 func init() {
-	fmt.Println("Populating environment variables...")
-	requiredEnvVariables := [10]string{"APP_PORT",
-		"JWT_SECRET",
-		"OAUTH_CLIENT_ID",
-		"OAUTH_CLIENT_SECRET",
-		"DB_TYPE",
-		"DB_HOST",
-		"DB_PORT",
-		"DB_USER",
-		"DB_PASS",
-		"DB_SSL_MODE",
-	}
-
-	fmt.Println("Sourcing config from environment variables or local file .env")
-	err := godotenv.Load()
+	h, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err.Error())
-
+		fmt.Println(err)
 	}
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
 
-	Port = os.Getenv("APP_PORT")
-	JwtSecret = os.Getenv("JWT_SECRET")
-	ClientID = os.Getenv("OAUTH_CLIENT_ID")
-	ClientSecret = os.Getenv("OAUTH_CLIENT_SECRET")
-	RedirectURL = os.Getenv("OAUTH_CALLBACK_URL")
-	DBType = os.Getenv("DB_TYPE")
-	DBHost = os.Getenv("DB_HOST")
-	DBPort = os.Getenv("DB_PORT")
-	DBUser = os.Getenv("DB_USER")
-	DBPass = os.Getenv("DB_PASS")
-	DBSSLMode = os.Getenv("DB_SSL_MODE")
-	fmt.Println(ClientID)
-	fmt.Println(ClientSecret)
-	fmt.Println(RedirectURL)
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("/etc/")
+	viper.AddConfigPath(h + "/.go-auth/")
 
-	for _, v := range requiredEnvVariables {
-		ev := os.Getenv(v)
-		if len(ev) < 1 {
-			log.Fatalf("app: Missing Env variable: %s", v)
+	setDefaultValues()
+
+	if err = viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Fatalln("Config file not found")
+		} else {
+			log.Fatalln(err)
 		}
 	}
+
+	for _, k := range viper.AllKeys() {
+		if viper.IsSet(k) == false {
+			log.Fatalf("Config Value required: %q \n", k)
+		}
+	}
+
+	populateValues()
+}
+
+func setDefaultValues() {
+	viper.SetDefault("PG_DB_SSL_MODE", "disable")
+	viper.SetDefault("APP_PORT", ":3000")
+	viper.SetDefault("JWT_SECRET", "MySuperSecret")
+	viper.SetDefault("OAUTH_AUDIENCE", "go-auth")
+}
+
+func populateValues() {
+	Port = ":" + strconv.Itoa(viper.GetInt("APP_PORT"))
+	JwtSecret = viper.GetString("JWT_SECRET")
+	OAuthIssuer = viper.GetString("OAUTH_ISSUER")
+	ClientID = viper.GetString("OAUTH_CLIENT_ID")
+	ClientSecret = viper.GetString("OAUTH_CLIENT_SECRET")
+	RedirectURL = viper.GetString("OAUTH_CALLBACK_URL")
+	DBType = viper.GetString("DB_TYPE")
+	DBHost = viper.GetString("DB_HOST")
+	DBPort = viper.GetInt("DB_PORT")
+	DBUser = viper.GetString("DB_USER")
+	DBPass = viper.GetString("DB_PASS")
+	DBSSLMode = viper.GetString("PG_DB_SSL_MODE")
+
 }

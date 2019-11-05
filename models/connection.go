@@ -7,7 +7,7 @@ import (
 	"github.com/MelchiSalins/go-auth/pkg/app"
 	"github.com/jinzhu/gorm"
 
-	// Required by FORM to connect to postgres
+	// Required by GORM to connect to postgres
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	// Required by GORM to connect to sqlite
@@ -28,7 +28,7 @@ func OpenDBConn(dbname string, logmode bool) (*gorm.DB, error) {
 		db.LogMode(logmode)
 		return db, err
 	case "postgres", "pg":
-		c := fmt.Sprintf("host=%s port=%s sslmode=%s user=%s password=%s", app.DBHost, app.DBPort, app.DBSSLMode, app.DBUser, app.DBPass)
+		c := fmt.Sprintf("host=%s port=%d sslmode=%s user=%s password=%s", app.DBHost, app.DBPort, app.DBSSLMode, app.DBUser, app.DBPass)
 		db, err := gorm.Open("postgres", c)
 		db.LogMode(logmode)
 		return db, err

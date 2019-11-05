@@ -17,9 +17,7 @@ import (
 )
 
 var (
-	// TODO: Source secret from application configuration.
-	// https://github.com/MelchiSalins/go-auth/issues/3
-	jwtKey = []byte("secret")
+	jwtKey = []byte(app.JwtSecret)
 )
 
 const (
@@ -51,9 +49,9 @@ type Authenticator struct {
 // NewAuthenticator Return an instance of Authenticator type
 func NewAuthenticator() (*Authenticator, error) {
 	ctx := context.Background()
-	provider, err := oidc.NewProvider(ctx, "https://accounts.google.com")
+	provider, err := oidc.NewProvider(ctx, app.OAuthIssuer)
 	if err != nil {
-		log.Fatalf("Failed to get provider: %v", err)
+		log.Printf("Failed to get provider: %v", err)
 		return nil, err
 	}
 
@@ -92,7 +90,7 @@ func (a *Authenticator) HandleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rawTokenID, ok := token.Extra("id_token").(string)
-	fmt.Println(rawTokenID)
+	log.Println(rawTokenID)
 	if !ok {
 		http.Error(w, "No id_token field in oauth2 token", http.StatusInternalServerError)
 		return
@@ -178,9 +176,9 @@ func issueJWT(tk *models.User) (*string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(app.JwtSecret))
+	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return nil, err
 	}
 
