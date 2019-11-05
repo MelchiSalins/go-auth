@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/MelchiSalins/go-auth/pkg/app"
-	handler "github.com/MelchiSalins/go-auth/pkg/handler"
+	"github.com/MelchiSalins/go-auth/pkg/handler"
 	"github.com/gorilla/mux"
 )
 
