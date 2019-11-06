@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
@@ -14,7 +13,7 @@ var (
 	// EnvFile Path
 	EnvFile string
 	//Port to run the service on
-	Port string
+	Port int
 	//JwtSecret Signing secret
 	JwtSecret string
 	//OAuthIssuer Address for OAuth provider
@@ -97,7 +96,7 @@ func setDefaultValues() {
 }
 
 func populateValues() {
-	Port = ":" + strconv.Itoa(viper.GetInt("APP_PORT"))
+	Port = viper.GetInt("APP_PORT")
 	JwtSecret = viper.GetString("JWT_SECRET")
 	OAuthIssuer = viper.GetString("OAUTH_ISSUER")
 	ClientID = viper.GetString("OAUTH_CLIENT_ID")
@@ -109,5 +108,4 @@ func populateValues() {
 	DBUser = viper.GetString("DB_USER")
 	DBPass = viper.GetString("DB_PASS")
 	DBSSLMode = viper.GetString("PG_DB_SSL_MODE")
-
 }

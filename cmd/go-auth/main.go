@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/MelchiSalins/go-auth/pkg/app"
 	"github.com/MelchiSalins/go-auth/pkg/handler"
@@ -11,7 +12,7 @@ import (
 
 func main() {
 	log.Println("Starting server on port: ", app.Port)
-	log.Fatal(http.ListenAndServe(app.Port, Handler()))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(app.Port), Handler()))
 }
 
 // Handler returns Gorilla Mux Handler for HTTP Server
