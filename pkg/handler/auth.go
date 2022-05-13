@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc"
-	jwt "github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt/v4"
 	"golang.org/x/oauth2"
 
 	"github.com/MelchiSalins/go-auth/models"
